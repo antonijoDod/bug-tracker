@@ -1,7 +1,5 @@
-export { Header } from "./header";
-export { Logo } from "./logo";
-export { Main } from "./main";
-export { Button } from "./button";
-export { Card } from "./card";
-export { Cards } from "./cards";
-export { Footer } from "./footer";
+export {default as AdminLayout} from './AdminLayout'
+export {default as FormDrawer} from './formDrawer'
+export {default as Loader} from './loader'
+export {default as CommentEditor} from './commentEditor'
+export {default as CommentList} from './commentList'
