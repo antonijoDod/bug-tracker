@@ -1,0 +1,9 @@
+.layout {
+    min-height: 100vh !important;
+}
+
+.content {
+    padding: 1rem;
+    height: 100%;
+    background-color: white;
+}

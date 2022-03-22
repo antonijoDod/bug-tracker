@@ -1,9 +1,9 @@
-import React from "react";
-import { Table, PageHeader } from "antd";
+import React, { useState } from "react";
+import { Table, PageHeader, Button } from "antd";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { Loader } from "components";
+import { Loader, ActionHeader } from "components";
 
 const columns = [
   {
@@ -31,6 +31,7 @@ const columns = [
 ];
 
 const ProjectIndexPage = () => {
+  const [visible, setVisible] = useState<boolean>(false);
   const {
     data: bugsData,
     isError,
@@ -39,6 +40,16 @@ const ProjectIndexPage = () => {
     const res = await axios(`http://localhost:1337/api/bugs?populate=*`);
     return await res.data;
   });
+
+  // Open drawer
+  const handleDrawerOpen = () => {
+    setVisible(true);
+  };
+
+  // Close drawer
+  const handleDrawerClose = () => {
+    setVisible(false);
+  };
 
   if (isLoading) return <Loader />;
 
@@ -49,6 +60,11 @@ const ProjectIndexPage = () => {
         onBack={() => window.history.back()}
         title="Bugs"
         subTitle="All bugs"
+        extra={[
+          <Button key="1" type="primary" onClick={handleDrawerOpen}>
+            New project
+          </Button>,
+        ]}
       />
       <Table
         rowKey={({ id }) => id}

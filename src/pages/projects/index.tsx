@@ -3,33 +3,36 @@ import moment from "moment";
 import qs from "qs";
 import {
   Table,
-  PageHeader,
   Button,
   Form,
   Col,
   Row,
   Input,
   Select,
-  DatePicker,
-  Space,
   Tag,
   message,
   Popconfirm,
+  notification,
 } from "antd";
-import { FormDrawer } from "components";
-import { useMutation, useQueryClient } from "react-query";
-import axios from "axios";
+import { ActionHeader } from "components";
 import { DeleteOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { useProjects } from "query/projects";
+import {
+  useProjectsData,
+  useDeleteProject,
+  useAddProject,
+} from "hooks/query/projects";
 
 const { Option } = Select;
 
 const ProjectsPage = () => {
-  const queryClient = useQueryClient();
+  const [form] = Form.useForm();
+  const deleteProject = useDeleteProject();
+  const addProject = useAddProject();
   const [visible, setVisible] = useState(false);
   const [currentPaginationPage, setCurrentPaginationPage] = useState(1);
 
+  // Retrieve projects by parameters
   const query = qs.stringify(
     {
       pagination: {
@@ -42,8 +45,13 @@ const ProjectsPage = () => {
     }
   );
 
-  const { data, isLoading } = useProjects(1, query);
+  // Get projects
+  const { data: projectsData, isLoading } = useProjectsData(
+    currentPaginationPage,
+    query
+  );
 
+  // Columns for table
   const columns = [
     {
       width: 100,
@@ -98,48 +106,60 @@ const ProjectsPage = () => {
     },
   ];
 
-  const handleDrawerVisibility = () => {
+  const handleDrawerOpen = () => {
     setVisible(true);
   };
 
-  const handleCloseDrawerVisibility = () => {
+  const handleDrawerClose = () => {
     setVisible(false);
   };
 
-  const handleTableChange = (e) => {
-    setCurrentPaginationPage(e.current);
+  // Listen for table change and set pagination number
+  const handleTableChange = (page) => {
+    setCurrentPaginationPage(page.current);
   };
 
+  // Delete specific project by id
   const handleDeleteProject = async (id) => {
-    await deleteProject.mutateAsync(id);
+    message.loading({ content: "Deleting project", key: "deleteMessageKey" });
+
+    await deleteProject.mutateAsync(id, {
+      onSuccess: () => {
+        message.success({
+          content: "Project is deleted",
+          key: "deleteMessageKey",
+        });
+      },
+      onError: (error) => {
+        message.error({
+          content: "Something is wrong",
+          key: "deleteMessageKey",
+        });
+      },
+    });
   };
 
-  const deleteProject = useMutation(
-    async (id) =>
-      await axios.delete(`http://localhost:1337/api/projects/${id}`),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries("projects");
-        message.success("Project is deleted");
-        handleCloseDrawerVisibility();
-      },
-    }
-  );
-
-  const addProject = useMutation(
-    async (data) =>
-      await axios.post("http://localhost:1337/api/projects", { data }),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries("projects");
-        message.success("New project is created");
-        handleCloseDrawerVisibility();
-      },
-    }
-  );
-
+  // Run on submiting form
   const onFinish = async (values: any) => {
-    await addProject.mutateAsync(values);
+    message.loading({ content: "Creating new project", key: "newProjectKey" });
+    await addProject.mutateAsync(values, {
+      onSuccess: () => {
+        message.success({
+          content: "Project is created",
+          key: "newProjectKey",
+        });
+        handleDrawerClose();
+      },
+      onError: (error) => {
+        const messageContent =
+          error instanceof Error ? error.message : "Error in creating project";
+        notification.error({
+          message: messageContent,
+          description: messageContent,
+        });
+        message.error({ content: "Something is wrong!", key: "newProjectKey" });
+      },
+    });
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -148,45 +168,19 @@ const ProjectsPage = () => {
 
   return (
     <>
-      <PageHeader
-        ghost={false}
-        onBack={() => window.history.back()}
+      <ActionHeader
         title="Projects"
-        subTitle="Your all projects"
-        extra={[
-          <Button key="1" type="primary" onClick={handleDrawerVisibility}>
-            New project
-          </Button>,
-        ]}
-      ></PageHeader>
-      <Table
-        rowKey={(record) => record.id}
-        columns={columns}
-        loading={isLoading}
-        pagination={{
-          defaultCurrent: 1,
-          current: currentPaginationPage,
-          pageSize: data?.meta.pagination.pageSize,
-          total: data?.meta.pagination.total,
-        }}
-        dataSource={data?.data}
-        bordered={false}
-        onChange={handleTableChange}
-      />
-      <FormDrawer
-        title="Create new project"
+        subTitle="All projects"
+        drawerTitle="Add new project"
         visible={visible}
-        onClose={handleCloseDrawerVisibility}
-        extra={
-          <Space>
-            <Button onClick={handleCloseDrawerVisibility}>Cancel</Button>
-          </Space>
-        }
+        handleDrawerOpen={handleDrawerOpen}
+        handleDrawerClose={handleDrawerClose}
       >
         <Form
           layout="vertical"
           hideRequiredMark
           onFinish={onFinish}
+          form={form}
           onFinishFailed={onFinishFailed}
         >
           <Row gutter={16}>
@@ -202,17 +196,6 @@ const ProjectsPage = () => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="prefix" label="Project prefix">
-                <Input
-                  style={{ width: "100%" }}
-                  addonBefore="PB"
-                  placeholder="Please enter project number"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
               <Form.Item
                 name="status"
                 label="Status"
@@ -223,18 +206,6 @@ const ProjectsPage = () => {
                   <Option value="testing">Testing</Option>
                   <Option value="closed">Closed</Option>
                 </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="dateTime"
-                label="DateTime"
-                rules={[{ required: true, message: "Please choose the date" }]}
-              >
-                <DatePicker.RangePicker
-                  style={{ width: "100%" }}
-                  getPopupContainer={(trigger) => trigger.parentElement}
-                />
               </Form.Item>
             </Col>
           </Row>
@@ -261,7 +232,21 @@ const ProjectsPage = () => {
             Submit
           </Button>
         </Form>
-      </FormDrawer>
+      </ActionHeader>
+      <Table
+        rowKey={(record) => record.id}
+        columns={columns}
+        loading={isLoading}
+        pagination={{
+          defaultCurrent: 1,
+          current: currentPaginationPage,
+          pageSize: projectsData?.meta.pagination.pageSize,
+          total: projectsData?.meta.pagination.total,
+        }}
+        dataSource={projectsData?.data}
+        bordered={false}
+        onChange={handleTableChange}
+      />
     </>
   );
 };

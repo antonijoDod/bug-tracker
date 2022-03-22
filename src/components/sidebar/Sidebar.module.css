@@ -1,7 +1,3 @@
-.layout {
-    min-height: 100vh;
-}
-
 .logo {
     height: 32px;
     margin: 16px;
@@ -18,13 +14,4 @@
 .logo span {
     font-size: 1.3rem;
     font-weight: bold;
-}
-
-.header {
-    background-color: white;
-    border-bottom: 1px solid rgb(0, 0, 0, .2);
-}
-
-.light__background {
-    background: rgb(255, 255, 255);
 }

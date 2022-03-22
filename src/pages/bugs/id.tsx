@@ -19,7 +19,7 @@ import axios from "axios";
 import { Loader, CommentList, CommentEditor } from "components";
 import moment from "moment";
 const { Option } = Select;
-const { Paragraph, Text, Title } = Typography;
+const { Paragraph, Title } = Typography;
 
 const BugPage = () => {
   const queryClient = useQueryClient();
@@ -87,6 +87,7 @@ const BugPage = () => {
     addComment.mutate(message);
   };
 
+  console.log("Bug page");
   if (bugIsLoading) return <Loader />;
 
   return (
@@ -161,22 +162,28 @@ const BugPage = () => {
       </Card>
       <Card style={{ marginTop: "2rem" }}>
         <Title level={5}>Comments</Title>
-        {commentsData.data?.length > 0 && (
-          <CommentList
-            comments={commentsData}
-            commentsIsLoading={commentsIsLoading}
-          />
-        )}
-        <Comment
-          avatar={<Avatar />}
-          content={
-            <CommentEditor
-              onFinish={handleMessageOnFinish}
-              submitting={addComment.isLoading}
-              value={messageValue}
+        {!commentsIsLoading ? (
+          <>
+            {commentsData.data?.length > 0 && (
+              <CommentList
+                comments={commentsData}
+                commentsIsLoading={commentsIsLoading}
+              />
+            )}
+            <Comment
+              avatar={<Avatar />}
+              content={
+                <CommentEditor
+                  onFinish={handleMessageOnFinish}
+                  submitting={addComment.isLoading}
+                  value={messageValue}
+                />
+              }
             />
-          }
-        />
+          </>
+        ) : (
+          <Loader />
+        )}
       </Card>
     </>
   );
