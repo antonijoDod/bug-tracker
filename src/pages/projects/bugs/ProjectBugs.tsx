@@ -1,6 +1,7 @@
 import { useState } from "react";
 import moment from "moment";
 import qs from "qs";
+import { useParams } from "react-router-dom";
 import {
   Table,
   Button,
@@ -17,24 +18,28 @@ import {
 import { ActionHeader } from "components";
 import { DeleteOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import {
-  useProjectsData,
-  useDeleteProject,
-  useAddProject,
-} from "hooks/query/projects";
+import { useProjectBugsData } from "hooks/query/projectBugs";
 
 const { Option } = Select;
 
-const ProjectsPage = () => {
+const ProjectBugs = () => {
+  const { id: projectId } = useParams();
   const [form] = Form.useForm();
-  const deleteProject = useDeleteProject();
-  const addProject = useAddProject();
+  /*   const deleteBug = useDeleteBug();
+  const addBug = useAddBug(); */
   const [visible, setVisible] = useState(false);
   const [currentPaginationPage, setCurrentPaginationPage] = useState(1);
 
-  // Retrieve projects by parameters
+  // Retrieve bugs by parameters
   const query = qs.stringify(
     {
+      filters: {
+        project: {
+          id: {
+            $eq: projectId,
+          },
+        },
+      },
       pagination: {
         page: currentPaginationPage,
         pageSize: 10,
@@ -45,8 +50,8 @@ const ProjectsPage = () => {
     }
   );
 
-  // Get projects
-  const { data: projectsData, isLoading } = useProjectsData(
+  // Get bugs
+  const { data: projectBugsData, isLoading } = useProjectBugsData(
     currentPaginationPage,
     query
   );
@@ -56,21 +61,19 @@ const ProjectsPage = () => {
     {
       width: 100,
       title: "Prefix",
-      render: (_, { id }) => <span>PR-{id}</span>,
+      render: (_, { id }) => <span>BG-{id}</span>,
     },
     {
-      title: "Project name",
+      title: "Bug",
       dataIndex: ["attributes", "name"],
-      key: "name",
-      render: (name, { id }) => <Link to={`/projects/${id}/bugs`}>{name}</Link>,
+      render: (name, { id }) => <Link to={`/bugs/${id}`}>{name}</Link>,
     },
     {
       title: "Status",
       dataIndex: ["attributes", "status"],
-      key: "status",
       render: (status) => {
-        if (status === "active") {
-          return <Tag color="green">Active</Tag>;
+        if (status === "open") {
+          return <Tag color="green">Open</Tag>;
         }
         if (status === "testing") {
           return <Tag color="cyan">Testing</Tag>;
@@ -81,12 +84,24 @@ const ProjectsPage = () => {
       },
     },
     {
-      title: "Created",
-      key: "createdAt",
+      title: "Priority",
+      dataIndex: ["attributes", "priority"],
+      render: (status) => {
+        if (status === "high") {
+          return <Tag color="#ff0000">High</Tag>;
+        }
+        if (status === "medium") {
+          return <Tag color="#ff9900">Medium</Tag>;
+        }
+        if (status === "low") {
+          return <Tag color="#2db7f5">Low</Tag>;
+        }
+      },
+    },
+    {
+      title: "Deadline",
       render: (_, record) => {
-        return (
-          <>{moment(record.attributes.createdAt).format("DD MMM, YYYY")}</>
-        );
+        return <>{moment(record.attributes.deadline).format("DD MMM, YYYY")}</>;
       },
     },
     {
@@ -95,12 +110,13 @@ const ProjectsPage = () => {
       dataIndex: "action",
       render: (status, record) => {
         return (
-          <Popconfirm
+          /*   <Popconfirm
             title="Are you sure to delete?"
-            onConfirm={() => handleDeleteProject(record.id)}
+            onConfirm={() => handleDeleteBug(record.id)}
           >
             <Button type="link" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          </Popconfirm> */
+          <h1>Obrisi</h1>
         );
       },
     },
@@ -119,14 +135,14 @@ const ProjectsPage = () => {
     setCurrentPaginationPage(page.current);
   };
 
-  // Delete specific project by id
-  const handleDeleteProject = async (id) => {
+  // Delete specific bug by id
+  /*   const handleDeleteBug = async (id) => {
     message.loading({ content: "Deleting project", key: "deleteMessageKey" });
 
-    await deleteProject.mutateAsync(id, {
+    await deleteBug.mutateAsync(id, {
       onSuccess: () => {
         message.success({
-          content: "Project is deleted",
+          content: "Bug is deleted",
           key: "deleteMessageKey",
         });
       },
@@ -137,16 +153,16 @@ const ProjectsPage = () => {
         });
       },
     });
-  };
+  }; */
 
   // Run on submiting form
   const onFinish = async (values: any) => {
-    message.loading({ content: "Creating new project", key: "newProjectKey" });
-    await addProject.mutateAsync(values, {
+    /*   message.loading({ content: "Creating new project", key: "newBugKey" });
+    await addBug.mutateAsync(values, {
       onSuccess: () => {
         message.success({
           content: "Project is created",
-          key: "newProjectKey",
+          key: "newBugKey",
         });
         handleDrawerClose();
       },
@@ -157,9 +173,9 @@ const ProjectsPage = () => {
           message: messageContent,
           description: messageContent,
         });
-        message.error({ content: "Something is wrong!", key: "newProjectKey" });
+        message.error({ content: "Something is wrong!", key: "newBugKey" });
       },
-    });
+    }); */
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -169,9 +185,9 @@ const ProjectsPage = () => {
   return (
     <>
       <ActionHeader
-        title="Projects"
-        subTitle="All projects"
-        drawerTitle="Add new project"
+        title="Bugs"
+        subTitle="All bugs"
+        drawerTitle="Add new bug"
         visible={visible}
         handleDrawerOpen={handleDrawerOpen}
         handleDrawerClose={handleDrawerClose}
@@ -188,11 +204,9 @@ const ProjectsPage = () => {
               <Form.Item
                 name="name"
                 label="Name"
-                rules={[
-                  { required: true, message: "Please enter project name" },
-                ]}
+                rules={[{ required: true, message: "Please enter bug name" }]}
               >
-                <Input placeholder="Please enter project name" />
+                <Input placeholder="Please enter bug name" />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -234,16 +248,17 @@ const ProjectsPage = () => {
         </Form>
       </ActionHeader>
       <Table
+        scroll={{ x: 600 }}
         rowKey={(record) => record.id}
         columns={columns}
         loading={isLoading}
         pagination={{
           defaultCurrent: 1,
           current: currentPaginationPage,
-          pageSize: projectsData?.meta.pagination.pageSize,
-          total: projectsData?.meta.pagination.total,
+          pageSize: projectBugsData?.meta.pagination.pageSize,
+          total: projectBugsData?.meta.pagination.total,
         }}
-        dataSource={projectsData?.data}
+        dataSource={projectBugsData?.data}
         bordered={false}
         onChange={handleTableChange}
       />
@@ -251,4 +266,4 @@ const ProjectsPage = () => {
   );
 };
 
-export default ProjectsPage;
+export default ProjectBugs;

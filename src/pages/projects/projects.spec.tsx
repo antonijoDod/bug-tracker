@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from "test";
-import ProjectsPage from "./index";
+import Projects from "./Projects";
 
 describe("Project page tests", () => {
-  const view = render(<ProjectsPage />);
+  const view = render(<Projects />);
 
   it("Page is truthy", () => {
     expect(view).toBeTruthy();

@@ -46,9 +46,14 @@ const LoginPage = () => {
           <p>Login to the Dashboard</p>
           <Form.Item
             name="username"
-            rules={[{ required: true, message: "Please input your username!" }]}
+            rules={[
+              {
+                required: true,
+                message: "Please input your username or email!",
+              },
+            ]}
           >
-            <Input placeholder="Username" />
+            <Input placeholder="Username or email" />
           </Form.Item>
 
           <Form.Item

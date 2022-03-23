@@ -38,7 +38,7 @@ const Header = () => {
 
               <Dropdown overlay={menu}>
                 <Button type="primary" shape="circle">
-                  A
+                  {user.username[0].toUpperCase()}
                 </Button>
               </Dropdown>
             </>

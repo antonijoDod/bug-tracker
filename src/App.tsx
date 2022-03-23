@@ -5,16 +5,15 @@ import { AuthProvider } from "lib/auth";
 
 import { AuthLayout } from "components";
 
-import Home from "pages";
-import ProjectsPage from "pages/projects";
-import BugsIndexPage from "pages/bugs";
-import BugPage from "pages/bugs/id";
-import PojectBugsPage from "pages/projects/bugs";
-import ProbaIndex from "pages/proba";
+// Pages
 import LoginPage from "pages/login/LoginPage";
+import Home from "pages";
+import Projects from "pages/projects/Projects";
+import Bugs from "pages/bugs/Bugs";
+import Bug from "pages/bugs/Bug";
+import ProjectBugs from "./pages/projects/bugs/ProjectBugs";
 
 import PrivateRoute from "utils/PrivateRoute";
-import ProjectBugsPage from "./pages/projects/bugs/index";
 
 import "antd/dist/antd.css";
 import "styles/global.scss";
@@ -41,7 +40,7 @@ function App(): JSX.Element {
                 path="/projects"
                 element={
                   <PrivateRoute>
-                    <ProjectsPage />
+                    <Projects />
                   </PrivateRoute>
                 }
               />
@@ -49,7 +48,7 @@ function App(): JSX.Element {
                 path="/bugs"
                 element={
                   <PrivateRoute>
-                    <BugsIndexPage />
+                    <Bugs />
                   </PrivateRoute>
                 }
               />
@@ -57,7 +56,7 @@ function App(): JSX.Element {
                 path="/bugs/:id"
                 element={
                   <PrivateRoute>
-                    <BugPage />
+                    <Bug />
                   </PrivateRoute>
                 }
               />
@@ -65,7 +64,7 @@ function App(): JSX.Element {
                 path="/projects/:id/bugs"
                 element={
                   <PrivateRoute>
-                    <ProjectBugsPage />
+                    <ProjectBugs />
                   </PrivateRoute>
                 }
               />

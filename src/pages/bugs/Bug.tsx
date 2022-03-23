@@ -21,7 +21,7 @@ import moment from "moment";
 const { Option } = Select;
 const { Paragraph, Title } = Typography;
 
-const BugPage = () => {
+const Bug = () => {
   const queryClient = useQueryClient();
   const { id: bugId } = useParams();
   const [messageValue, setMessageValue] = useState();
@@ -189,4 +189,4 @@ const BugPage = () => {
   );
 };
 
-export default BugPage;
+export default Bug;

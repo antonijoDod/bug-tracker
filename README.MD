@@ -81,20 +81,6 @@ Source map explorer analyzes JavaScript bundles using the source maps. This help
 [Go To Documentation](https://github.com/danvk/source-map-explorer#readme)
 
 
-### **React Redux**
-
-Redux helps you write applications that behave consistently, run in different environments (client, server, and native), and are easy to test.
-
-[Go To Documentation](https://redux.js.org/introduction/getting-started)
-
-
-### **RTK Query**
-
-RTK Query is a powerful data fetching and caching tool
-
-[Go To Documentation](https://redux-toolkit.js.org/rtk-query/overview)
-
-
 ### **eslint**
 
 

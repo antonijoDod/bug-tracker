@@ -1,11 +1,12 @@
 import axios from "axios";
+import { storage } from "utils/token";
 
 const client = axios.create({
-  baseURL: process.env.REACT_APP_ENV_VARIABLE + "/api",
+  baseURL: process.env.REACT_APP_SERVER_API + "/api",
 });
 
 export const request = ({ ...options }) => {
-  client.defaults.headers.common.Authorization = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQ3NzA1NjcwLCJleHAiOjE2NTAyOTc2NzB9.Qa46-56sWniUfODSXuzgoxucH0yV2ojTr5NtEHKcdQc`;
+  client.defaults.headers.common.Authorization = "Bearer " + storage.getToken();
   const onSuccess = (response) => response;
   const onError = (error) => {
     const errorMessage = error.response.data.error.message;

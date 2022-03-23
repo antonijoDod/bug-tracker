@@ -1,7 +1,9 @@
 import React, { FC, ReactElement } from "react";
 import { render, RenderOptions, RenderResult } from "@testing-library/react";
 
+import { AuthProvider } from "lib/auth";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { BrowserRouter } from "react-router-dom";
 
 /**
  * Custom renderer example with @testing-library/react
@@ -16,7 +18,11 @@ export const AllTheProviders = ({ children }) => {
 
   return (
     <>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <BrowserRouter>{children}</BrowserRouter>
+        </AuthProvider>
+      </QueryClientProvider>
     </>
   );
 };
