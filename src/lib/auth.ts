@@ -1,6 +1,6 @@
 import axios from "axios";
 import { initReactQueryAuth } from "react-query-auth";
-import {storage} from 'utils/token'
+import { storage } from 'utils/token'
 
 interface User {
   id: number;
@@ -23,31 +23,33 @@ async function handleUserResponse(data) {
   return user;
 }
 
-const loadUser = async() => {
-   let user = null;
+const loadUser = async () => {
+  let user = null;
 
   if (storage.getToken()) {
-    const response = await axios("http://localhost:1337/api/users/me", {headers: {
-      Authorization: "Bearer " + storage.getToken()
-    }})
+    const response = await axios(process.env.REACT_APP_SERVER_API + "/api/users/me", {
+      headers: {
+        Authorization: "Bearer " + storage.getToken()
+      }
+    })
     const data = await response.data
     user = data;
   }
   return user;
 }
-const logoutFn = async() => {
+const logoutFn = async () => {
   await storage.clearToken()
 }
 
-const loginFn = async({identifier, password}) => {
-  const response = await axios.post("http://localhost:1337/api/auth/local", {identifier, password})
+const loginFn = async ({ identifier, password }) => {
+  const response = await axios.post(process.env.REACT_APP_SERVER_API + "/api/auth/local", { identifier, password })
   const responseData = await response.data
   const user = await handleUserResponse(responseData)
   return user;
 
 }
-const registerFn = async({identifier, password}) => {
-  const response = await axios.post("http://localhost:1337/api/auth/local", {identifier, password})
+const registerFn = async ({ identifier, password }) => {
+  const response = await axios.post(process.env.REACT_APP_SERVER_API + "/api/auth/local", { identifier, password })
   const responseData = await response.data
   const user = await handleUserResponse(responseData)
   return user;
