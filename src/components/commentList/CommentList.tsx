@@ -12,20 +12,25 @@ const CommentList = ({ comments, commentsIsLoading }) => {
       }`} */
       itemLayout="horizontal"
       renderItem={({ id, attributes }) => (
-        <Comment
-          content={attributes.message}
-          author={attributes.author.data.attributes.username}
-          datetime={moment(attributes.createdAt).format("DD MMM, YYYY, HH:mm")}
-          avatar={
-            <Avatar
-              children={"A"}
-              style={{
-                backgroundColor: attributes.author.data.attributes.avatar_color,
-                color: "white",
-              }}
-            />
-          }
-        />
+        <List.Item>
+          <Comment
+            content={attributes.message}
+            author={attributes.author.data.attributes.username}
+            datetime={moment(attributes.createdAt).format(
+              "DD MMM, YYYY, HH:mm"
+            )}
+            avatar={
+              <Avatar
+                children={"A"}
+                style={{
+                  backgroundColor:
+                    attributes.author.data.attributes.avatar_color,
+                  color: "white",
+                }}
+              />
+            }
+          />
+        </List.Item>
       )}
     />
   );

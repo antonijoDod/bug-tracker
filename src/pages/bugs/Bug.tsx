@@ -18,54 +18,53 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { Loader, CommentList, CommentEditor } from "components";
 import moment from "moment";
+import { useBugData, useUpdateBug } from "hooks/query/bug";
+import { useCommentsData, useAddComment } from "hooks/query/comments";
+import { useAuth } from "lib/auth";
+
 const { Option } = Select;
 const { Paragraph, Title } = Typography;
 
 const Bug = () => {
-  const queryClient = useQueryClient();
   const { id: bugId } = useParams();
+  const { user } = useAuth();
+  const addComment = useAddComment();
   const [messageValue, setMessageValue] = useState();
-  const key = "changeBugStates";
 
-  const { data: bugData, isLoading: bugIsLoading } = useQuery(
-    "bug",
-    async () => {
-      const res = await axios(
-        `http://localhost:1337/api/bugs/${bugId}?populate=*`
-      );
-      return await res.data.data;
-    }
-  );
+  const { data: bugData, isLoading: bugIsLoading } = useBugData(bugId);
 
-  const { data: commentsData, isLoading: commentsIsLoading } = useQuery(
-    "comments",
-    async () => {
-      const res = await axios(
-        `http://localhost:1337/api/comments?populate=*&sort[0]=createdAt&filters[bug][id][$eq]=${bugId}`
-      );
-      return await res.data;
-    }
-  );
+  const updateBug = useUpdateBug(bugId);
 
-  const changeStatus = useMutation(
-    async (value) => {
-      const res = await axios.put(`http://localhost:1337/api/bugs/${bugId}`, {
-        data: { status: value },
-      });
-      return await res.data;
-    },
-    {
-      onMutate: () => {
-        message.loading({ content: "Loading...", key });
-      },
+  const handleStatusChange = (value: any, more) => {
+    const data: any = { status: value };
+    message.loading({ content: "Loading...", key: "updateStatusKey" });
+    updateBug.mutateAsync(data, {
       onSuccess: () => {
-        queryClient.invalidateQueries("bug");
-        message.success({ content: "Bug is updated", key });
+        message.success({
+          content: "Status is updated",
+          key: "updateStatusKey",
+        });
       },
-    }
-  );
+    });
+  };
 
-  const addComment = useMutation(
+  const handlePriorityChange = (value: any, more) => {
+    const data: any = { priority: value };
+    message.loading({ content: "Loading...", key: "updatePriorityKey" });
+    updateBug.mutateAsync(data, {
+      onSuccess: () => {
+        message.success({
+          content: "Priority is updated",
+          key: "updatePriorityKey",
+        });
+      },
+    });
+  };
+
+  const { data: commentsData, isLoading: commentsIsLoading } =
+    useCommentsData(bugId);
+
+  /*   const addComment = useMutation(
     async (message) => {
       const res = await axios.post("http://localhost:1337/api/comments", {
         data: { message, bug: bugId, author: 1 },
@@ -77,17 +76,19 @@ const Bug = () => {
         queryClient.invalidateQueries("comments");
       },
     }
-  );
-
-  const handleStatusChange = (value) => {
-    changeStatus.mutateAsync(value);
-  };
+  ); */
 
   const handleMessageOnFinish = ({ message }) => {
-    addComment.mutate(message);
+    const data: any = {
+      message: message,
+      author: user.id,
+      bug: bugId,
+    };
+    addComment.mutate(data, {
+      onSuccess: () => {},
+    });
   };
 
-  console.log("Bug page");
   if (bugIsLoading) return <Loader />;
 
   return (
@@ -95,8 +96,8 @@ const Bug = () => {
       <PageHeader
         ghost={false}
         onBack={() => window.history.back()}
-        title={bugData.attributes.name}
-        subTitle={bugData.attributes.project.data.attributes.name}
+        title={bugData?.data.attributes.name}
+        subTitle={bugData?.data.attributes.project.data.attributes.name}
         extra={[
           <Button key="1" type="primary">
             Delete bug
@@ -106,7 +107,7 @@ const Bug = () => {
       <Card>
         <Title level={5}>Current status</Title>
         <Select
-          value={bugData.attributes.status}
+          value={bugData?.data.attributes.status}
           style={{ width: 120 }}
           onChange={handleStatusChange}
           bordered={false}
@@ -124,39 +125,43 @@ const Bug = () => {
       </Card>
       <Card style={{ marginTop: "2rem" }}>
         <Title level={5}>Bug description</Title>
-        <Paragraph>
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Deleniti
-          dolorem, earum esse ipsam recusandae corporis!
-        </Paragraph>
+        <Paragraph>{bugData?.data.attributes.description}</Paragraph>
       </Card>
       <Card style={{ marginTop: "2rem" }}>
         <Descriptions title="Bug info">
           <Descriptions.Item label="Status">
-            {bugData.attributes.status === "open" && (
+            {bugData?.data.attributes.status === "open" && (
               <Tag color="#2db7f5">Open</Tag>
             )}
-            {bugData.attributes.status === "testing" && (
+            {bugData?.data.attributes.status === "testing" && (
               <Tag icon={<SyncOutlined spin />} color="success">
                 Testing
               </Tag>
             )}
-            {bugData.attributes.status === "closed" && (
+            {bugData?.data.attributes.status === "closed" && (
               <Tag color="#f50">Closed</Tag>
             )}
           </Descriptions.Item>
           <Descriptions.Item label="Deadline">
-            {moment(bugData.attributes.deadline).format("DD MMM, YYYY")}
+            {moment(bugData?.data.attributes.deadline).format("DD MMM, YYYY")}
           </Descriptions.Item>
           <Descriptions.Item label="Priority">
-            {bugData.attributes.priority === "high" && (
-              <Tag color="#f50">High</Tag>
-            )}
-            {bugData.attributes.priority === "medium" && (
-              <Tag color="orange">Medium</Tag>
-            )}
-            {bugData.attributes.priority === "low" && (
-              <Tag color="blue">Low</Tag>
-            )}
+            <Select
+              value={bugData?.data.attributes.priority}
+              style={{ width: 120 }}
+              onChange={handlePriorityChange}
+              bordered={false}
+            >
+              <Option value="high">
+                <Tag color="#f50">High</Tag>
+              </Option>
+              <Option value="medium">
+                <Tag color="orange">Medium</Tag>
+              </Option>
+              <Option value="low">
+                <Tag color="blue">Low</Tag>
+              </Option>
+            </Select>
           </Descriptions.Item>
         </Descriptions>
       </Card>

@@ -11,13 +11,19 @@ import {
   Select,
   Tag,
   message,
+  DatePicker,
   Popconfirm,
   notification,
 } from "antd";
 import { ActionHeader } from "components";
 import { DeleteOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { useBugsData, useAddBug, useDeleteBug } from "hooks/query/bugs";
+import {
+  useBugsData,
+  useAddBug,
+  useDeleteBug,
+  useAllProjects,
+} from "hooks/query/bugs";
 
 const { Option } = Select;
 
@@ -25,6 +31,11 @@ const Bugs = () => {
   const [form] = Form.useForm();
   const deleteBug = useDeleteBug();
   const addBug = useAddBug();
+  const { data: projectsData, isLoading: projectsIsLoading } = useAllProjects();
+  console.log(
+    "🚀 ~ file: Bugs.tsx ~ line 34 ~ Bugs ~ projectsData",
+    projectsData
+  );
   const [visible, setVisible] = useState(false);
   const [currentPaginationPage, setCurrentPaginationPage] = useState(1);
 
@@ -147,18 +158,18 @@ const Bugs = () => {
 
   // Run on submiting form
   const onFinish = async (values: any) => {
-    message.loading({ content: "Creating new project", key: "newBugKey" });
+    message.loading({ content: "Creating new bug", key: "newBugKey" });
     await addBug.mutateAsync(values, {
       onSuccess: () => {
         message.success({
-          content: "Project is created",
+          content: "Bug is created",
           key: "newBugKey",
         });
         handleDrawerClose();
       },
       onError: (error) => {
         const messageContent =
-          error instanceof Error ? error.message : "Error in creating project";
+          error instanceof Error ? error.message : "Error in creating bug";
         notification.error({
           message: messageContent,
           description: messageContent,
@@ -206,10 +217,59 @@ const Bugs = () => {
                 rules={[{ required: true, message: "Please choose status" }]}
               >
                 <Select placeholder="Please choose status">
-                  <Option value="active">Active</Option>
+                  <Option value="open">Open</Option>
                   <Option value="testing">Testing</Option>
                   <Option value="closed">Closed</Option>
                 </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name={["project", "id"]}
+                label="Project"
+                rules={[
+                  { required: true, message: "Please select project name" },
+                ]}
+              >
+                <Select
+                  showSearch
+                  loading={projectsIsLoading}
+                  placeholder="Search to Select"
+                  optionFilterProp="children"
+                >
+                  {!projectsIsLoading &&
+                    projectsData.data.map((project) => (
+                      <Option key={project.id} value={project.id}>
+                        PR-{`${project.id} ${project.attributes.name}`}
+                      </Option>
+                    ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="priority"
+                label="Priority"
+                rules={[{ required: true, message: "Please select priority" }]}
+              >
+                <Select placeholder="Please choose priority">
+                  <Option value="high">High</Option>
+                  <Option value="medium">Medium</Option>
+                  <Option value="low">Low</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="deadline"
+                label="Deadline"
+                rules={[{ required: true, message: "Please select deadline" }]}
+              >
+                <DatePicker />
               </Form.Item>
             </Col>
           </Row>
